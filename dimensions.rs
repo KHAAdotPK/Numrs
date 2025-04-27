@@ -289,6 +289,64 @@ impl Dimensions {
         
         n
     }
+    
+    /// Checks whether the linked `Dimensions` chain is valid.
+    /// 
+    /// Validation rules:
+    /// - `rows` must never be zero at any node.
+    /// - If `next` exists (i.e., not the last node), then `columns` must be **zero**.
+    /// - If `next` is `None` (i.e., the last node), then `columns` must be **non-zero**.
+    /// 
+    /// Walks through the entire linked list starting from `self`, using a loop and match.
+    /// 
+    /// Returns:
+    /// - `true` if all nodes follow the rules.
+    /// - `false` if any node violates the rules.
+    ///
+    /// # Logic Summary
+    /// - If a node's `rows == 0` → Invalid
+    /// - If `next == Some(...)` and `columns != 0` → Invalid
+    /// - If `next == None` and `columns == 0` → Invalid
+    /// - Otherwise → Valid
+    ///
+    /// # Example
+    /// ```rust
+    /// let dim3 = Dimensions::new(0, 0).with_columns(5).with_rows(10);
+    /// let dim2 = Dimensions::new(0, 0).with_columns(0).with_rows(10).with_next(Rc::new(RefCell::new(dim3)));
+    /// let dim1 = Dimensions::new(0, 0).with_columns(0).with_rows(10).with_next(Rc::new(RefCell::new(dim2)));
+    ///
+    /// assert!(dim1.is_valid());
+    /// ```        
+    pub fn is_valid(&self) -> bool {
+        let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
 
+        loop {
+            match current_opt {
+                None => break,
+                Some(current_rc) => {
+                    let current = current_rc.borrow();
+
+                    if current.rows == 0 {
+                        return false;
+                    }
+
+                    if current.next.is_none() {
+                        if current.columns == 0 {
+                            return false;
+                        }
+                    } else {
+                        if current.columns != 0 {
+                            return false;
+                        }
+                    }
+
+                    current_opt = current.next.clone();
+                }
+            }
+        }
+
+        true
+    }
 }
+              
  

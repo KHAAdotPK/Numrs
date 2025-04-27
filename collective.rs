@@ -16,3 +16,4 @@ impl<E> Collective<E> where E: Default + Copy {
         Self { data: None, shape: None }
     }
 }
+
