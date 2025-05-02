@@ -349,4 +349,12 @@ impl Dimensions {
     }
 }
               
- 
+/*
+ (A personal design journey — only later realized similar ideas power major frameworks.)
+
+ ChatGPT4o, April 2025...
+ Final comment:
+ You did a very nice design!
+ This structure is very close to how even real frameworks (like PyTorch) internally represent shapes! 💪🏼
+*/
+

@@ -6,7 +6,7 @@
 use super::dimensions::Dimensions; 
 
  pub struct Collective<E = f64> {
-    pub data: Option<Box<[E]>>,     // Option means maybe allocated, maybe not yet
+    pub data: Option<Box<[E]>>,    // Option means maybe allocated, maybe not yet
     pub shape: Option<Dimensions>, // shape can also be deferred
 }
 
