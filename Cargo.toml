@@ -1,0 +1,8 @@
+# numrs/Cargo.toml
+
+[package]
+name = "numrs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

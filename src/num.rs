@@ -43,8 +43,35 @@ impl Numrs {
     ///
     /// # Returns
     ///
+    /// * `Option<Collective<E>)` with all elements set to `E::default() or if some other trait is defined`, or with no data if the shape is zero.
+    pub fn ones<E: One + Copy>(like: Dimensions) -> Option<Collective<E>> {
+        let n = like.get_n();
+        if n == 0 {
+            // Return an empty shape if the size is zero
+            return Some(Collective { 
+                data: None,
+                shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+            });
+        }
+    
+        let allocation: Box<[E]> = vec![E::one(); n].into_boxed_slice();
+    
+        Some(Collective { 
+            data: Some(allocation),
+            shape: Some(Box::new(like)), // Wrap in Box::new()
+        })
+    }
+
+    /// Creates a new `Collective<E>` filled with ones, based on the shape provided by `Dimensions`.
+    /// 
+    /// # Arguments
+    ///
+    /// * `like` - A `Dimensions` object specifying the desired shape of the one-filled array.
+    ///
+    /// # Returns
+    ///
     /// * `Some(Collective<E>)` with all elements set to `E::default() or if some other trait is defined`, or with no data if the shape is zero.
-    pub fn ones<E: One/*Default*/ + Copy>(like: Dimensions) -> Option<Collective<E>> {
+    /*pub fn ones_old<E: One/*Default*/ + Copy>(like: Dimensions) -> Option<Collective<E>> {
         // You can allocate a Box<[E]> of zeros based on `like` shape
         
         let n = like.get_n();
@@ -61,7 +88,7 @@ impl Numrs {
         Some(Collective { data: Some(allocation),
                           shape: Some(like),
         })
-    }
+    }*/
 
     /// Creates a new `Collective<E>` filled with zeros, based on the shape provided by `Dimensions`.
     /// 
@@ -71,8 +98,8 @@ impl Numrs {
     ///
     /// # Returns
     ///
-    /// * `Some(Collective<E>)` with all elements set to `E::default()`, or with no data if the shape is zero.    
-    pub fn zeros<E: Zero/*Default*/ + Copy>(like: Dimensions) -> Option<Collective<E>> {
+    /// * `Some(Collective<E>)` with all elements set to `E::default()`, or with no data if the shape is zero.
+    /*pub fn zeros<E: Zero/*Default*/ + Copy>(like: Dimensions) -> Option<Collective<E>> {
         // You can allocate a Box<[E]> of zeros based on `like` shape
         
         let n = like.get_n();
@@ -89,5 +116,23 @@ impl Numrs {
         Some(Collective { data: Some(allocation),
                           shape: Some(like),
         })
+    }*/
+
+    pub fn zeros<E: Zero + Copy>(like: Dimensions) -> Option<Collective<E>> {
+    let n = like.get_n();
+    if n == 0 {
+        // Return an empty shape if the size is zero
+        return Some(Collective { 
+            data: None,
+            shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+        });
     }
+    
+    let allocation: Box<[E]> = vec![E::zero(); n].into_boxed_slice();
+    
+    Some(Collective { 
+        data: Some(allocation),
+        shape: Some(Box::new(like)), // Wrap in Box::new()
+    })
+}
 }
