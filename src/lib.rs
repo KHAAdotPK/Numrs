@@ -18,8 +18,8 @@ mod tests {
 
     #[test]
     fn test_basic_functionality() {
-        //let dim = Dimensions::new(5, 10);
-        //assert!(dim.is_valid());
+        let dim = Dimensions::new(5, 10);
+        assert!(dim.is_valid());
     }
     
     // Add basic smoke tests for other modules when ready
