@@ -301,3 +301,22 @@ fn test_memory_efficiency() {
         }
     }
 }
+
+#[test]
+fn test_randn() {
+    let dim = Dimensions::new(10, 10); // 100 elements
+    
+    let result: Option<Collective<f64>> = Numrs::randn::<f64>(dim);
+    
+    if let Some(collective) = result {
+        if let Some(data) = &collective.data {
+            // Ensure we allocated exactly the right amount
+            assert_eq!(data.len(), 100, "Should allocate exactly 100 elements");
+            
+            // Box<[T]> should be properly sized
+            let box_size = std::mem::size_of_val(&**data);
+            let expected_size = 100 * std::mem::size_of::<f64>();
+            assert_eq!(box_size, expected_size, "Memory allocation should be efficient");
+        }
+    }
+}

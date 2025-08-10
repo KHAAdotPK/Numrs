@@ -3,9 +3,11 @@
  * Q@khaa.pk
  */
 
-use std::rc::Rc;
+//use std::rc::Rc;
 //use std::cell::Ref;
-use std::cell::RefCell;
+//use std::cell::RefCell;
+
+use std::{cell::RefCell, fmt, rc::Rc};
 
 #[derive(Clone)] // Derive Clone trait for easy cloning.
                  // Rust has the Clone trait, which is used to explicitly copy the data of a struct (or any value) — somewhat like a copy constructor in C++. But it’s opt-in and not automatic unless you derive it.
@@ -346,6 +348,82 @@ impl Dimensions {
         }
 
         true
+    }
+}
+
+/// Formats the `Dimensions` linked list for display using the `Display` trait.
+/// 
+/// This method traverses the entire linked list of `Dimensions` nodes and creates
+/// a human-readable string representation showing the dimensional structure.
+///
+/// # Format Rules:
+/// - **Intermediate nodes** (where `next.is_some()`): Shows only the `rows` value
+/// - **Final node** (where `next.is_none()` and `columns > 0`): Shows `rows × columns`
+/// - **Empty or invalid structures**: Shows "Empty dimensions"
+/// - **Separator**: Uses `→` (arrow) to indicate dimensional flow from outer to inner
+///
+/// # How it works:
+/// 1. Creates a vector to collect dimension strings
+/// 2. Traverses the linked list using `next` pointers
+/// 3. For each node, determines the appropriate format based on its position
+/// 4. Joins all collected parts with `→` arrows
+/// 5. Handles edge cases for empty or malformed structures
+///
+/// # Output Examples:
+/// - Single dimension: `"10 × 5"` → 10 rows with 5 columns each
+/// - Two dimensions: `"3 → 10 × 5"` → 3 arrays, each with 10 rows of 5 columns
+/// - Three dimensions: `"2 → 3 → 10 × 5"` → 2 groups of 3 arrays, each 10×5
+/// - Invalid/empty: `"Empty dimensions"`
+///
+/// # Parameters:
+/// * `&self` - Reference to the starting `Dimensions` node
+/// * `f` - Mutable reference to the formatter for writing output
+///
+/// # Returns:
+/// * `fmt::Result` - `Ok(())` on successful formatting, or formatting error
+///
+/// # Usage:
+/// ```rust
+/// let dims = Dimensions::new(10, 5);
+/// println!("{}", dims); // Prints: "10 × 5"
+/// 
+/// let complex_dims = Dimensions::new(0, 3)
+///     .with_next(Rc::new(RefCell::new(
+///         Dimensions::new(10, 5)
+///     )));
+/// println!("{}", complex_dims); // Prints: "3 → 10 × 5"
+/// ```
+///
+/// # Note:
+/// This implementation assumes that the linked structure follows the validation rules
+/// defined in `is_valid()`. Malformed structures may produce unexpected output.
+impl fmt::Display for Dimensions {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut parts = Vec::new();
+        let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
+        
+        // Traverse the linked list and collect dimension information
+        while let Some(current_rc) = current_opt {
+            let current = current_rc.borrow();
+            
+            // If this is the last node (has columns), show rows × columns
+            if current.next.is_none() && current.columns > 0 {
+                parts.push(format!("{} × {}", current.rows, current.columns));
+            } 
+            // If this is not the last node, just show rows
+            else if current.next.is_some() && current.rows > 0 {
+                parts.push(format!("{}", current.rows));
+            }
+            
+            current_opt = current.next.clone();
+        }
+        
+        // Join all parts with " → " to show the dimensional flow
+        if parts.is_empty() {
+            write!(f, "Empty dimensions")
+        } else {
+            write!(f, "{}", parts.join(" → "))
+        }
     }
 }
               
