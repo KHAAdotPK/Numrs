@@ -46,7 +46,7 @@ impl Numrs {
     /// # Returns
     ///
     /// * `Option<Collective<E>)` with all elements set to `E::default() or if some other trait is defined`, or with no data if the shape is zero.
-    pub fn ones<E: One + Copy>(like: Dimensions) -> Option<Collective<E>> {
+    /*pub fn ones<E: One + Copy>(like: Dimensions) -> Option<Collective<E>> {
         let n = like.get_n();
         if n == 0 {
             // Return an empty shape if the size is zero
@@ -62,6 +62,24 @@ impl Numrs {
             data: Some(allocation),
             shape: Some(Box::new(like)), // Wrap in Box::new()
         })
+    }*/
+
+    pub fn ones<E: One + Copy>(like: Dimensions) -> Collective<E> {
+        let n = like.get_n();
+        if n == 0 {
+            // Return an empty shape if the size is zero
+            return Collective { 
+                data: None,
+                shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+            };
+        }
+            
+        let allocation: Box<[E]> = vec![E::one(); n].into_boxed_slice();
+    
+        Collective { 
+            data: Some(allocation),
+            shape: Some(Box::new(like)), // Wrap in Box::new()
+        }
     }
 
    /*
@@ -79,7 +97,7 @@ impl Numrs {
        * For floating point types (f32, f64), generates uniformly distributed values in [0, 1)
        * For integer types, generates values across the full range of the type
     */
-    pub fn randn<E>(like: Dimensions) -> Option<Collective<E>> 
+    /*pub fn randn<E>(like: Dimensions) -> Option<Collective<E>> 
     where 
         E: Copy,
         Standard: Distribution<E>
@@ -104,7 +122,35 @@ impl Numrs {
             data: Some(allocation),
             shape: Some(Box::new(like)),
         })
+    }*/
+
+    pub fn randn<E>(like: Dimensions) -> Collective<E> 
+    where 
+        E: Copy,
+        Standard: Distribution<E>
+    {
+        let n = like.get_n();
+        if n == 0 {
+            
+            // Return an empty shape if the size is zero
+            return Collective {
+                data: None,
+                shape: Some(Box::new(Dimensions::new(0, 0)))
+            };
+        }
+        
+        let mut rng = rand::thread_rng();
+        let allocation: Box<[E]> = (0..n)
+            .map(|_| rng.gen::<E>())
+            .collect::<Vec<E>>()
+            .into_boxed_slice();
+
+        Collective {
+            data: Some(allocation),
+            shape: Some(Box::new(like)),
+        }
     }
+
     
     /*
      * Generates a tensor of random integers within a specified range, shaped according to the provided dimensions.
@@ -136,7 +182,7 @@ impl Numrs {
      *   neural networks like the HRM.
      * - Ensure `low < high` to avoid invalid range errors in `rng.gen_range`.
      */
-    pub fn randint (low: i32, high: i32, like: Dimensions) -> Option<Collective<i32>> {
+    /*pub fn randint (low: i32, high: i32, like: Dimensions) -> Option<Collective<i32>> {
 
         let n = like.get_n();
         
@@ -159,6 +205,31 @@ impl Numrs {
             data: Some(allocation),
             shape: Some(Box::new(like)),
         })        
+    }*/
+
+    pub fn randint (low: i32, high: i32, like: Dimensions) -> Collective<i32> {
+
+        let n = like.get_n();
+        
+        if n == 0 {
+            
+            // Return an empty shape if the size is zero
+            return Collective {
+                data: None,
+                shape: Some(Box::new(Dimensions::new(0, 0)))
+            };
+        }
+
+        let mut rng = rand::thread_rng();
+        let allocation: Box<[i32]> = (0..n)
+            .map(|_| rng.gen_range(low..high))
+            .collect::<Vec<i32>>()
+            .into_boxed_slice();
+
+        Collective {
+            data: Some(allocation),
+            shape: Some(Box::new(like)),
+        }        
     }
 
     /// Creates a new `Collective<E>` filled with ones, based on the shape provided by `Dimensions`.
@@ -249,7 +320,7 @@ impl Numrs {
      *   biases in the HRM's HLM and LLM modules.
      * - Ensure the `Dimensions` struct is properly configured to match the expected tensor shape for the target use case.
      */
-    pub fn zeros<E: Zero + Copy>(like: Dimensions) -> Option<Collective<E>> {
+    /*pub fn zeros<E: Zero + Copy>(like: Dimensions) -> Option<Collective<E>> {
         let n = like.get_n();
         if n == 0 {
             // Return an empty shape if the size is zero
@@ -265,5 +336,23 @@ impl Numrs {
             data: Some(allocation),
             shape: Some(Box::new(like)), // Wrap in Box::new()
         })
+    }*/
+
+    pub fn zeros<E: Zero + Copy>(like: Dimensions) -> Collective<E> {
+        let n = like.get_n();
+        if n == 0 {
+            // Return an empty shape if the size is zero
+            return Collective { 
+                data: None,
+                shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+            };
+        }
+    
+        let allocation: Box<[E]> = vec![E::zero(); n].into_boxed_slice();
+    
+        Collective { 
+            data: Some(allocation),
+            shape: Some(Box::new(like)), // Wrap in Box::new()
+        }
     }
 }
