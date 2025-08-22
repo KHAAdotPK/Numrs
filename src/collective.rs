@@ -95,4 +95,68 @@ impl<E> Collective<E> where E: Default + Copy {
 
         Self { data: Some(buffer), shape: Some(shape) }
     }
+
+    /*pub fn slice(&self, start: usize, end: usize) -> Collective<E> {
+
+        let size = end - start;
+        let buffer: Box<[E]> = self.data.unwrap()[start..end].into_boxed_slice();
+
+        Collective { data: Some(buffer), shape: self.shape.clone() }
+    }*/
+
+    /// Creates a new `Collective` containing a copy of a slice of the original data.
+    ///
+    /// This method performs the following checks and operations:
+    /// 1. Handles the case where the original `Collective` has no data (`None`).
+    /// 2. Validates that the `start` and `end` indices are within the bounds of the data.
+    /// 3. Creates a new, owned buffer (`Box<[E]>`) by copying the specified range of data.
+    /// 4. Creates a new `Dimensions` object that correctly represents the shape of the slice (a 1D vector).
+    /// 5. Returns a new, fully-initialized `Collective` with the new data and shape.
+    ///
+    /// # Arguments
+    /// * `start` - The starting index of the slice (inclusive).
+    /// * `end` - The ending index of the slice (exclusive).
+    ///
+    /// # Panics
+    /// This method will panic if `start > end` or if `end` is greater than the length of the data.
+    ///
+    /// # Returns
+    /// A new `Collective<E>` instance. If the original data is `None`, it returns an
+    /// empty `Collective` with `None` for both data and shape.
+    pub fn get_slice(&self, start: usize, end: usize, shape: Box<Dimensions>) -> Box<Collective<E>> {
+        // First, check if there is any data to slice.
+        // Using `if let` is a safe way to handle the Option without unwrapping.
+        if let Some(data) = &self.data {
+            // Check for valid slice range to prevent panics.
+            if start > end || end > data.len() {
+                panic!(
+                    "Slice indices out of bounds. start: {}, end: {}, len: {}",
+                    start,
+                    end,
+                    data.len()
+                );
+            }
+
+            // Create a new buffer by copying the data from the slice.
+            // .to_vec() creates an owned Vec<E>, which is then converted into a Box<[E]>.
+            let new_buffer = data[start..end].to_vec().into_boxed_slice();
+            let new_size = new_buffer.len();
+
+            // The shape of the slice is a new 1D dimension.
+            // We create a new Dimensions object to reflect this.
+            /*let new_shape = Some(Box::new(Dimensions::new(vec![new_size])));*/
+
+            // Return the new Collective with the copied data and new shape.
+            Box::new(Collective {
+                data: Some(new_buffer),
+                shape: Some(shape),
+            })
+        } else {
+            // If the original Collective has no data, the slice should also be empty.
+            Box::new(Collective {
+                data: None,
+                shape: None,
+            })
+        }
+    }
 }
