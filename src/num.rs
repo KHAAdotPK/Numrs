@@ -7,7 +7,7 @@ use rand::Rng;
 use rand::distributions::{Distribution, Standard}; 
 use super::{dimensions::Dimensions, collective::Collective};
 
-pub struct Numrs;
+pub struct Tensor;
 
 pub trait One {
     fn one() -> Self;
@@ -35,7 +35,7 @@ impl Zero for f64 {
 }
 // Add more impls as needed (u32, usize, etc.)
 
-impl Numrs {
+impl Tensor {
 
     /// Creates a new `Collective<E>` filled with ones, based on the shape provided by `Dimensions`.
     /// 

@@ -1,7 +1,7 @@
 # numrs/Cargo.toml
 
 [package]
-name = "numrs"
+name = "Numrs"
 version = "0.1.0"
 edition = "2021"
 
