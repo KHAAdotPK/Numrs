@@ -1,5 +1,5 @@
 /*
- * lib/Numrs/Dimensions.rs
+ * Numrs/src/Dimensions.rs
  * Q@khaa.pk
  */
 

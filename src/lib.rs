@@ -1,14 +1,17 @@
 /*
-    numrs/src/lib.rs
+    Numrs/src/lib.rs
     Q@khaa.pk
  */
 
 pub mod dimensions;
 pub mod collective;
 pub mod num;
+pub mod header;
 
 // Re-export main types at crate level for easier importing
 pub use dimensions::Dimensions;
+pub use header::Axis;
+
 //pub use collective::Collective; // Uncomment when you have this module
 
 

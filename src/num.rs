@@ -1,5 +1,5 @@
 /*
- * lib/numrs/num.rs
+ * Numrs/src/num.rs
  * Q@khaa.pk
  */
 

@@ -1,11 +1,11 @@
 /*
- * lib/numrs/collective.rs
+ * Numrs/src/collective.rs
  * Q@khaa.pk
  */
 
 use std::ops::{Index, IndexMut};
-
 use super::dimensions::Dimensions; 
+use crate::header::Axis;
 
  pub struct Collective<E = f64> {
     //pub data: Option<Box<[E]>>,    // Option means maybe allocated, maybe not yet
@@ -117,6 +117,8 @@ impl<E> Collective<E> where E: Default + Copy {
     /// * `start` - The starting index of the slice (inclusive).
     /// * `end` - The ending index of the slice (exclusive).
     /// * `shape` - The shape of the slice. This is a heap-allocated Dimensions object that defines the tensor shape.
+    /// * `axis` - The axis along which to slice the data.
+    ///
     /// TODO,
     /// I actually wanted to avoid the cloning (when calling the method) but as previously I was calling it by cloning it and for that I was hoping to convert it to reference in its argument list....
     /// but now cloning is happening inside the method so i think i leave it as it is for now....?
@@ -127,40 +129,54 @@ impl<E> Collective<E> where E: Default + Copy {
     /// # Returns
     /// A new `Collective<E>` instance. If the original data is `None`, it returns an
     /// empty `Collective` with `None` for both data and shape.
-    pub fn get_slice(&self, start: usize, end: usize, shape: Box<Dimensions>) -> Box<Collective<E>> {
-        // First, check if there is any data to slice.
-        // Using `if let` is a safe way to handle the Option without unwrapping.
-        if let Some(data) = &self.data {
-            // Check for valid slice range to prevent panics.
-            if start > end || end > data.len() {
-                panic!(
-                    "Slice indices out of bounds. start: {}, end: {}, len: {}",
-                    start,
-                    end,
-                    data.len()
-                );
+    pub fn get_slice(&self, start: usize, end: usize, shape: Box<Dimensions>, axis: Axis) -> Box<Collective<E>> {
+
+        if axis == Axis::None {
+                    
+            // First, check if there is any data to slice.
+            // Using `if let` is a safe way to handle the Option without unwrapping.
+            if let Some(data) = &self.data {
+                // Check for valid slice range to prevent panics.
+                if start > end || end > data.len() {
+                    panic!(
+                        "Slice indices out of bounds. start: {}, end: {}, len: {}",
+                        start,
+                        end,
+                        data.len()
+                    );
+                }
+
+                // Create a new buffer by copying the data from the slice.
+                // .to_vec() creates an owned Vec<E>, which is then converted into a Box<[E]>.
+                let new_buffer = data[start..end].to_vec().into_boxed_slice();
+                let new_size = new_buffer.len();
+
+                // The shape of the slice is a new 1D dimension.
+                // We create a new Dimensions object to reflect this.
+                /*let new_shape = Some(Box::new(Dimensions::new(vec![new_size])));*/
+
+                // Return the new Collective with the copied data and new shape.
+                Box::new(Collective {
+                    data: Some(new_buffer),
+                    shape: Some(shape),
+                })
+            } else {
+                // If the original Collective has no data, the slice should also be empty.
+                Box::new(Collective {
+                    data: None,
+                    shape: None,
+                })
             }
+        } else if axis == Axis::Columns {
 
-            // Create a new buffer by copying the data from the slice.
-            // .to_vec() creates an owned Vec<E>, which is then converted into a Box<[E]>.
-            let new_buffer = data[start..end].to_vec().into_boxed_slice();
-            let new_size = new_buffer.len();
+            unimplemented!("get_slice(), Axis::Columns: This feature is still in development");
+        } else if axis == Axis::Rows {
 
-            // The shape of the slice is a new 1D dimension.
-            // We create a new Dimensions object to reflect this.
-            /*let new_shape = Some(Box::new(Dimensions::new(vec![new_size])));*/
+            unimplemented!("get_slice(), Axis::Rows: This feature is still in development");
+        }
+        else {
 
-            // Return the new Collective with the copied data and new shape.
-            Box::new(Collective {
-                data: Some(new_buffer),
-                shape: Some(shape),
-            })
-        } else {
-            // If the original Collective has no data, the slice should also be empty.
-            Box::new(Collective {
-                data: None,
-                shape: None,
-            })
+            panic!("get_slice(): Panicked!");
         }
     }
 }
