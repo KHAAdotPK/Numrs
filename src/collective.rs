@@ -116,6 +116,10 @@ impl<E> Collective<E> where E: Default + Copy {
     /// # Arguments
     /// * `start` - The starting index of the slice (inclusive).
     /// * `end` - The ending index of the slice (exclusive).
+    /// * `shape` - The shape of the slice. This is a heap-allocated Dimensions object that defines the tensor shape.
+    /// TODO,
+    /// I actually wanted to avoid the cloning (when calling the method) but as previously I was calling it by cloning it and for that I was hoping to convert it to reference in its argument list....
+    /// but now cloning is happening inside the method so i think i leave it as it is for now....?
     ///
     /// # Panics
     /// This method will panic if `start > end` or if `end` is greater than the length of the data.
