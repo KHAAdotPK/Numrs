@@ -16,15 +16,15 @@ use std::{cell::RefCell, fmt, rc::Rc};
                  // If you're debugging and want clearer output, you can use {:#?} instead of {:?} for a pretty-printed, indented layout
 
 pub struct Dimensions {
-    columns: usize,
-    rows: usize,
+    columns: f64,
+    rows: f64,
     next: Option<Rc<RefCell<Dimensions>>>, // This field does not implement `Copy` trait. Copy doesn’t work for anything with heap-allocated parts like String, Vec, etc. Use Clone for those
     prev: Option<Rc<RefCell<Dimensions>>>, // This field does not implement `Copy` trait. Copy doesn’t work for anything with heap-allocated parts like String, Vec, etc. Use Clone for those
 }
  
 impl Dimensions {
     // Constructor
-    pub fn new(columns: usize, rows: usize) -> Self {
+    pub fn new(columns: f64, rows: f64) -> Self {
         Self {
             columns,
             rows,
@@ -34,44 +34,72 @@ impl Dimensions {
     }
  
     // Fluent setters
-    pub fn with_columns(mut self, columns: usize) -> Self {
+    pub fn with_columns(mut self, columns: f64) -> Self {
+
         self.columns = columns;
         self
     }
  
-    pub fn with_rows(mut self, rows: usize) -> Self {
+    pub fn with_rows(mut self, rows: f64) -> Self {
+
         self.rows = rows;
         self
     }
  
     pub fn with_next(mut self, next: Rc<RefCell<Dimensions>>) -> Self {
+
         self.next = Some(next);
         self
     }
  
     pub fn with_prev(mut self, prev: Rc<RefCell<Dimensions>>) -> Self {
+
         self.prev = Some(prev);
         self
     }
  
     // Regular mutable setters (if needed after creation)
-    pub fn set_columns(&mut self, columns: usize) {
+    pub fn set_columns(&mut self, columns: f64) {
+
         self.columns = columns;
     }
 
-    pub fn set_rows(&mut self, rows: usize) {
+    pub fn set_rows(&mut self, rows: f64) {
+
         self.rows = rows;
     }
  
     pub fn set_next(&mut self, next: Option<Rc<RefCell<Dimensions>>>) {
+
         self.next = next;
     }
  
     pub fn set_prev(&mut self, prev: Option<Rc<RefCell<Dimensions>>>) {
+
         self.prev = prev;
     }
  
     // Getters  
+
+    pub fn get_columns(&self) -> f64 {
+
+        self.columns()
+    }
+
+    pub fn get_rows(&self) -> f64 {
+
+        self.rows()
+    }
+
+    pub fn get_width(&self) -> f64 {
+
+        self.columns()
+    }
+    
+    pub fn get_height(&self) -> f64 {
+
+        self.rows()
+    }
     
     /// Returns the number of columns in the last link of the `Dimensions` linked list.
     ///
@@ -89,20 +117,20 @@ impl Dimensions {
     /// - After reaching the end, returns the last `columns` value found.
     ///
     /// # Returns
-    /// * `usize` — number of columns in the last node.
+    /// * `f64` — number of columns in the last node.
     ///
     /// # Note
     /// - If the linked list is a single node (no `next`), this returns its `columns`.
     /// - If the list is empty (hypothetically), it would return `0`.
-    pub fn columns(&self) -> usize {
+    pub fn columns(&self) -> f64 {
                
         let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
-        let mut n = 0;
+        let mut n: f64 = 0.0;
     
         while let Some(current_rc) = current_opt {
             let current = current_rc.borrow();
-               
-            n = current.columns;
+                        
+            n = current.columns as f64;
     
             current_opt = current.next.clone();
         }
@@ -143,16 +171,18 @@ impl Dimensions {
     /// rows() = 3 * 4 = 12
     /// ```
     /// Meaning there are 12 rows total (each having 5 columns).
-    pub fn rows(&self) -> usize {
+    pub fn rows(&self) -> f64 {
         
         (self.get_number_of_inner_arrays() * self.get_number_of_innermost_arrays())
     }
  
     pub fn next(&self) -> Option<Rc<RefCell<Dimensions>>> {
+
         self.next.clone()
     }
  
     pub fn prev(&self) -> Option<Rc<RefCell<Dimensions>>> {
+
         self.prev.clone()
     }
     
@@ -173,10 +203,11 @@ impl Dimensions {
     /// # Returns
     /// * `usize` - Total number of elements (or `0` if invalid).    
     pub fn get_n(&self) -> usize {
-        let mut n: usize = 1;
+
+        let mut n: f64 = 1.0;
     
         let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
-        let mut last_link_columns = 0;
+        let mut last_link_columns: f64 = 0.0;
     
         while let Some(current_rc) = current_opt {
             let current = current_rc.borrow();
@@ -189,7 +220,7 @@ impl Dimensions {
     
         n *= last_link_columns;
     
-        n
+        return (n as usize);
     }
     
     /// Calculates the number of "inner arrays" in a multidimensional array structure.
@@ -206,7 +237,7 @@ impl Dimensions {
     /// - Returns the final computed `n`, representing the total number of "inner arrays".
     ///
     /// # Returns
-    /// * `usize` — Total number of inner arrays.
+    /// * `f64` — Total number of inner arrays.
     ///
     /// # Notes
     /// - If the structure has only one node (no `next`), this will simply return `1`.
@@ -223,8 +254,9 @@ impl Dimensions {
     /// n = 1 * 3 = 3
     /// ```
     /// Meaning there are 3 inner arrays, each with 4 rows and 5 columns.
-    pub fn get_number_of_inner_arrays(&self) -> usize {        
-        let mut n = 1;
+    pub fn get_number_of_inner_arrays(&self) -> f64 {
+
+        let mut n: f64 = 1.0;
         let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
     
         while let Some(current_rc) = current_opt {
@@ -275,14 +307,15 @@ impl Dimensions {
     /// n = 3
     /// ```
     /// Meaning there are 3 innermost arrays (each with 5 elements).
-    pub fn get_number_of_innermost_arrays(&self) -> usize {
-        let mut n = 0;
+    pub fn get_number_of_innermost_arrays(&self) -> f64 {
+
+        let mut n: f64 = 0.0;
         let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
     
         while let Some(current_rc) = current_opt {
             let current = current_rc.borrow();
             
-            if current.next.is_none() && current.columns != 0 {
+            if current.next.is_none() && current.columns != 0.0 {
                 n = current.rows;
             }
    
@@ -328,16 +361,16 @@ impl Dimensions {
                 Some(current_rc) => {
                     let current = current_rc.borrow();
 
-                    if current.rows == 0 {
+                    if current.rows == 0.0 {
                         return false;
                     }
 
                     if current.next.is_none() {
-                        if current.columns == 0 {
+                        if current.columns == 0.0 {
                             return false;
                         }
                     } else {
-                        if current.columns != 0 {
+                        if current.columns != 0.0 {
                             return false;
                         }
                     }
@@ -407,11 +440,11 @@ impl fmt::Display for Dimensions {
             let current = current_rc.borrow();
             
             // If this is the last node (has columns), show rows × columns
-            if current.next.is_none() && current.columns > 0 {
+            if current.next.is_none() && current.columns > 0.0 {
                 parts.push(format!("{} × {}", current.rows, current.columns));
             } 
             // If this is not the last node, just show rows
-            else if current.next.is_some() && current.rows > 0 {
+            else if current.next.is_some() && current.rows > 0.0 {
                 parts.push(format!("{}", current.rows));
             }
             

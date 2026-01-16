@@ -70,7 +70,7 @@ impl Tensor {
             // Return an empty shape if the size is zero
             return Collective { 
                 data: None,
-                shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+                shape: Some(Box::new(Dimensions::new(0.0, 0.0))) // Wrap in Box::new()
             };
         }
             
@@ -135,7 +135,7 @@ impl Tensor {
             // Return an empty shape if the size is zero
             return Collective {
                 data: None,
-                shape: Some(Box::new(Dimensions::new(0, 0)))
+                shape: Some(Box::new(Dimensions::new(0.0, 0.0)))
             };
         }
         
@@ -216,7 +216,7 @@ impl Tensor {
             // Return an empty shape if the size is zero
             return Collective {
                 data: None,
-                shape: Some(Box::new(Dimensions::new(0, 0)))
+                shape: Some(Box::new(Dimensions::new(0.0, 0.0)))
             };
         }
 
@@ -344,7 +344,7 @@ impl Tensor {
             // Return an empty shape if the size is zero
             return Collective { 
                 data: None,
-                shape: Some(Box::new(Dimensions::new(0, 0))) // Wrap in Box::new()
+                shape: Some(Box::new(Dimensions::new(0.0, 0.0))) // Wrap in Box::new()
             };
         }
     
