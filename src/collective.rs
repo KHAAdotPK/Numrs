@@ -187,26 +187,96 @@ where
         } else if axis == Axis::Columns {
             unimplemented!("get_slice(), Axis::Columns: This feature is still in development");
         } else if axis == Axis::Rows {
-            /*println!("-> len() {}", self.data.as_ref().unwrap().len());
+            // Pre-calculate the maximum possible index to validate bounds before the loop.
+            let slice_height = shape.get_height() as usize;
+            let slice_width = shape.get_width() as usize;
 
+            /*
+               This operation calculates how many instances of self.shape exist in self.data
+            */
+            let number_of_instances =
+                self.data.as_ref().unwrap().len() / self.shape.as_ref().unwrap().get_n();
+
+            println!(
+                "start = {}, end = {}, -> {} -> Height = {} -> Width = {} -> {} -> {}",
+                start,
+                end,
+                self.data.as_ref().unwrap().len(),
+                self.shape.as_ref().unwrap().get_height(),
+                self.shape.as_ref().unwrap().get_width(),
+                self.shape.as_ref().unwrap().get_n(),
+                number_of_instances
+            );
+
+            if slice_height == 0 || slice_width == 0 {
+                panic!("Collective::get_slice(), Axis::Rows: Block height or width is zero");
+            }
+
+            // Should I put >= or just >
+            if start as usize + slice_height > self.shape.as_ref().unwrap().get_height() as usize {
+                panic!("Collective::get_slice(), Axis::Rows: start + slice_height > self.shape.as_ref().unwrap().get_height() as usize");
+            }
+
+            // Should I put >= or just >
+            if end as usize + slice_width > self.shape.as_ref().unwrap().get_width() as usize {
+                panic!("Collective::get_slice(), Axis::Rows: end + slice_width > self.shape.as_ref().unwrap().get_width()");
+            }
+
+            /*println!("-> len() {}", self.data.as_ref().unwrap().len());
             println!("->{}", self.shape.as_ref().unwrap().get_n());
 
             println!("{}", self.shape.as_ref().unwrap().get_width());
 
-            println!("{}", self.shape.as_ref().unwrap().get_height());
+            println!("{}", self.shape.as_ref().unwrap().get_height());*/
 
-            println!("start = {}, end = {}", start, end);
+            //( self.shape.as_ref().unwrap().get_height() * self.shape.as_ref().unwrap().get_width() )
 
-            println!("{}", shape.get_n());
+            /*
+               Allocate a new vector of size (number_of_instances * shape.get_width() * shape.get_height())
+            */
+            let mut new_buffer =
+                vec![E::default(); number_of_instances * slice_width * slice_height];
+
+            // TODO It should throw panic if index is outofbound make sure and then if hrows panic catch it ....
+            for i in 0..slice_height
+            /*as usize*/
+            {
+                for j in 0..slice_width
+                /*as usize*/
+                {
+                    for k in 0..number_of_instances {
+                        new_buffer
+                            [i * slice_width * number_of_instances + j * number_of_instances + k] =
+                            self.data.as_ref().unwrap()[(start as usize + i/*as usize*/)
+                                * self.shape.as_ref().unwrap().get_width() as usize
+                                * number_of_instances
+                                + end as usize * number_of_instances
+                                + j /*as usize*/ * number_of_instances
+                                + k];
+                    }
+                }
+            }
+
+            /*println!(
+                "start = {}, end = {}, -> {} -> Height = {} -> Width = {} -> {} -> {}",
+                start,
+                end,
+                self.data.as_ref().unwrap().len(),
+                self.shape.as_ref().unwrap().get_height(),
+                self.shape.as_ref().unwrap().get_width(),
+                self.shape.as_ref().unwrap().get_n(),
+                number_of_instances
+            );*/
+
+            /*println!("{}", shape.get_n());
             println!("{}", shape.get_width());
             println!("{}", shape.get_height());*/
 
-            println!("start = {}", start);
+            //println!("start = {}", start);
 
-            // If the original Collective has no data, the slice should also be empty.
             Box::new(Collective {
-                data: None,
-                shape: None,
+                data: Some(new_buffer.into_boxed_slice()),
+                shape: Some(shape.clone()),
             })
         } else {
             panic!("get_slice(): Unhandled axis case. This indicates a bug in the axis matching logic. Please report this issue. Axis: {:?}", axis);
