@@ -101,6 +101,10 @@ where
         }
     }
 
+    pub fn get_shape(&mut self) -> &mut Box<Dimensions> {
+        self.shape.as_mut().unwrap()
+    }
+
     /// Creates a new `Collective` containing a copy of a slice of the original data.
     ///
     /// This method performs the following checks and operations:
