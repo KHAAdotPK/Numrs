@@ -3,6 +3,17 @@
  * Q@khaa.pk
  */
 
+/*
+   The "Systems" Way (In-Place Mutation)
+   -------------------------------------
+   This is the most efficient approach for a training pipeline.
+   Instead of allocating a new vector (which triggers the OS to find a new heap block), you reuse the memory you already have.
+   This keeps the data "hot" in the CPU cache.
+
+   - Pros: Zero extra memory allocation. Best for large batches.
+   - Cons: Destructive. If the model needs the raw u8 values later for debugging or visualization, they are gone.
+*/
+
 use super::{collective::Collective, dimensions::Dimensions};
 use rand::distributions::{Distribution, Standard};
 use rand::Rng;
@@ -50,6 +61,12 @@ pub trait FloatType: Copy + Sized {
 impl FloatType for f32 {
     fn from_f64(val: f64) -> Self {
         val as f32
+    }
+}
+
+impl FloatType for f16 {
+    fn from_f64(val: f64) -> Self {
+        val as f16
     }
 }
 
@@ -381,17 +398,24 @@ impl Tensor {
 
       Both methods ensure input features are on a consistent scale, preventing
       features with larger magnitudes from dominating the model's calculations.
+
+      @param
+      - `data`: A mutable reference to a `Collective<E>` containing the data to be normalized.
+      - `scale_denominator`: The value by which to divide the data.
+      - `offset`: The value to add to the data after division.
+
+      @returns
+      - `()`: Due to In-Place Mutation, the function returns nothing.
     */
-    pub fn normalize<E>(data: &mut Collective<E>, scale_denominator: E, offset: E) -> Vec<E>
+    pub fn normalize<E>(data: &mut Collective<E>, scale_denominator: E, offset: E)
     where
         E: FloatType + Copy + Default + std::ops::Div<Output = E> + std::ops::Add<Output = E>,
     {
-        let mut normalized_data = Vec::new();
-
+        // We iterate using a simple loop or iter_mut() to modify the values directly
         for i in 0..data.get_shape().get_n() {
             data[i] = data[i] / scale_denominator + offset;
         }
 
-        normalized_data
+        // Return nothing because the caller's data is already updated
     }
 }
