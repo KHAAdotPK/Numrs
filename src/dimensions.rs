@@ -3,10 +3,6 @@
  * Q@khaa.pk
  */
 
-//use std::rc::Rc;
-//use std::cell::Ref;
-//use std::cell::RefCell;
-
 use std::{cell::RefCell, fmt, rc::Rc};
 
 #[derive(Clone)]
@@ -425,7 +421,40 @@ impl Dimensions {
         // Return a clone of the head (shares ownership via Rc)
         let x = head.borrow().clone();
 
-        x
+        x // Pass by value
+    }
+
+    /// Converts the linked list of nodes starting from `self` into a vector of floating-point values.
+    ///
+    /// The traversal begins at the current node and follows the `next` references until the end of the list.
+    /// For each node encountered, its `rows` field is appended to the result vector. If the node's `columns`
+    /// field is greater than `0.0`, it is also appended immediately after the corresponding `rows` value.
+    ///
+    /// This operation clones the starting node to avoid mutating the original structure; the rest of the list
+    /// is accessed through shared references (via `Rc` and `RefCell`), so no deep copy of the entire list occurs.
+    ///
+    /// # Returns
+    /// A `Vec<f64>` containing the collected values in the order they appear during traversal.
+    pub fn to_vec(&self) -> Vec<f64> {
+        let mut current_opt = Some(Rc::new(RefCell::new(self.clone())));
+
+        let mut ret = Vec::new(); // Zero length vector
+
+        while let Some(current_rc) = current_opt
+        /* While the current node is not None */
+        {
+            let current = current_rc.borrow(); // Borrow the current node
+
+            ret.push(current.rows); // Push the rows
+
+            if current.columns > 0.0 {
+                ret.push(current.columns); // Push the columns
+            }
+
+            current_opt = current.next.clone(); // move to next node
+        }
+
+        ret // Pass by value
     }
 }
 
